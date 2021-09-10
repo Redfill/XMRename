@@ -29,8 +29,6 @@ def XMRenameEntry():
             if objName == sel.name():
                 sel.rename(str(objName).replace(R, L))
 
-
-
 def XMSaveEntry():
     file = pm.internalVar(usd=True) + "XMRename/"
     data = {}
@@ -62,7 +60,6 @@ def XMLoadEntry():
         for p in data['entries']:
             RenameEntry(L = p['L'], R = p['R'])
 
-
 def XMSearchReplace():
     selected = pm.ls(sl=True)
     for sel in selected:
@@ -70,6 +67,29 @@ def XMSearchReplace():
         replace = XMRenameWindow.replaceField.getText()
         objName = sel.name()
         sel.rename(str(objName).replace(search,replace))
+
+def XMPrefixSuffix(type=None):
+    selected = pm.ls(sl=True)
+    prefix = XMRenameWindow.prefixField.getText()
+    suffix = XMRenameWindow.suffixField.getText()
+
+    for sel in selected:
+        objName = sel.name()
+        if type == "prefix":
+            sel.rename(prefix+objName)
+        else:
+            sel.rename(objName+suffix)
+
+def XMenumerate():
+    selected = pm.ls(sl=True)
+    name = XMRenameWindow.enumField.getText()
+    start = XMRenameWindow.enumStart.getValue()
+    padding = XMRenameWindow.enumPadding.getValue() +1
+
+    for sel in selected:
+        sel.rename(name+str(f'{start:{0}{padding}}') )
+        start += 1
+
 
 
 class XMRenameWindows(object):
@@ -91,7 +111,7 @@ class XMRenameWindows(object):
         pm.menuItem(l="save entries",c="XMSaveEntry()")
 
         # entry based rename
-        self.Entryframe = pm.frameLayout(l="Entry Rename",mh=10, bgc=(0.5,0.2,0.2))
+        self.Entryframe = pm.frameLayout(l="Entry Rename",mh=10, bgc=(0.5,0.2,0.2), cll=True)
         pm.button(l="new Entry",c="RenameEntry()")
 
         self.EntryRow = pm.rowColumnLayout(nc=2)
@@ -103,7 +123,7 @@ class XMRenameWindows(object):
 
         # search and replace rename
         pm.setParent(self.menu)
-        self.searchFrame = pm.frameLayout(l="Search and Replace",mh=10,bgc=(0.2,0.5,0.2))
+        self.searchFrame = pm.frameLayout(l="Search and Replace",mh=10,bgc=(0.2,0.5,0.2), cll=True)
         pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
         pm.text(l="search:", al="left")
         self.searchField = pm.textField()
@@ -111,6 +131,41 @@ class XMRenameWindows(object):
         self.replaceField = pm.textField()
         pm.setParent(self.searchFrame)
         pm.button(l="Search Replace rename", c="XMSearchReplace()")
+
+        # prefix suffix rename
+        pm.setParent(self.menu)
+        self.prefixlayout = pm.frameLayout(l="prefix suffix", mh=10, bgc=(0.2,0.2,0.5), cll=True)
+        pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
+        pm.text(l="prefix:")
+        self.prefixField = pm.textField()
+        pm.setParent(self.prefixlayout)
+        pm.button(l="add prefix", c="XMPrefixSuffix(type='prefix')")
+        pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
+        pm.text(l="suffix:")
+        self.suffixField = pm.textField()
+        pm.setParent(self.prefixlayout)
+        pm.button(l="add suffix", c="XMPrefixSuffix(type='suffix')")
+
+        #enumaration rename
+        pm.setParent(self.menu)
+        self.enumLayout = pm.frameLayout(l="enumeration", mh=10, bgc=(0.2,0.5,0.5), cll=True)
+        pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
+        pm.text(l="rename")
+        self.enumField = pm.textField()
+        pm.setParent(self.enumLayout)
+        pm.rowColumnLayout(nc=2)
+        pm.text(l="start#")
+        pm.text(l="padding")
+        self.enumStart = pm.intField(v=1)
+        self.enumPadding = pm.intField()
+        pm.setParent(self.enumLayout)
+        pm.button(l="enumerate", c="XMenumerate()")
+
+
+
+
+
+
 
 
         # display new window
