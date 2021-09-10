@@ -1,6 +1,7 @@
 import pymel.core as pm
 import json
 import os
+
 class RenameEntry(object):
     entry = {}
 
@@ -13,11 +14,11 @@ class RenameEntry(object):
         else:
             self.LEntry = ""
             self.REntry = ""
-        pm.setParent(XMRenameWindow.row)
+        pm.setParent(XMRenameWindow.EntryRow)
         self.L = pm.textField(tx=self.LEntry)
         self.R = pm.textField(tx=self.REntry)
 
-def XMRename():
+def XMRenameEntry():
     selected = pm.ls(sl=True)
     for sel in selected:
         for ent in RenameEntry.entry:
@@ -62,33 +63,54 @@ def XMLoadEntry():
             RenameEntry(L = p['L'], R = p['R'])
 
 
+def XMSearchReplace():
+    selected = pm.ls(sl=True)
+    for sel in selected:
+        search = XMRenameWindow.searchField.getText()
+        replace = XMRenameWindow.replaceField.getText()
+        objName = sel.name()
+        sel.rename(str(objName).replace(search,replace))
+
+
 class XMRenameWindows(object):
     def __init__(self):
 
         self.window = "XMRename"
         self.title = "XM Rename"
-        self.size = (500,200)
+        self.size = (200,400)
 
         # close old window is open
         if pm.window(self.window, exists=True):
             pm.deleteUI(self.window, window=True)
 
         # create new window
-        self.window = pm.window(self.window, title=self.title, widthHeight=self.size)
+        self.window = pm.window(self.window, title=self.title, widthHeight=self.size,rtf=True)
 
-        pm.menuBarLayout()
+        self.menu = pm.menuBarLayout()
         pm.menu(l="edit")
         pm.menuItem(l="save entries",c="XMSaveEntry()")
 
-        self.frame = pm.frameLayout(l="rename")
+        # entry based rename
+        self.Entryframe = pm.frameLayout(l="Entry Rename",mh=10, bgc=(0.5,0.2,0.2))
         pm.button(l="new Entry",c="RenameEntry()")
 
-        self.row = pm.rowColumnLayout(nc=2)
+        self.EntryRow = pm.rowColumnLayout(nc=2)
         pm.text(l="L")
         pm.text(l="R")
 
-        pm.setParent(self.frame)
-        self.renameButton = pm.button(l="rename", c="XMRename()", en=False)
+        pm.setParent(self.Entryframe)
+        self.renameButton = pm.button(l="Entry Rename", c="XMRenameEntry()", en=False)
+
+        # search and replace rename
+        pm.setParent(self.menu)
+        self.searchFrame = pm.frameLayout(l="Search and Replace",mh=10,bgc=(0.2,0.5,0.2))
+        pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
+        pm.text(l="search:", al="left")
+        self.searchField = pm.textField()
+        pm.text(l="replace:", al="left")
+        self.replaceField = pm.textField()
+        pm.setParent(self.searchFrame)
+        pm.button(l="Search Replace rename", c="XMSearchReplace()")
 
 
         # display new window
