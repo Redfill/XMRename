@@ -85,11 +85,11 @@ def XMenumerate():
     name = XMRenameWindow.enumField.getText()
     start = XMRenameWindow.enumStart.getValue()
     padding = XMRenameWindow.enumPadding.getValue() +1
-
+    #todo fix double renaming adding to number
     for sel in selected:
         sel.rename(name+str(f'{start:{0}{padding}}') )
         start += 1
-
+    start = XMRenameWindow.enumStart.getValue()
 
 
 class XMRenameWindows(object):
