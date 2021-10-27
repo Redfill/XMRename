@@ -60,18 +60,42 @@ def XMLoadEntry():
         for p in data['entries']:
             RenameEntry(L = p['L'], R = p['R'])
 
-def XMSearchReplace():
+
+def XMJointMirror():
+    joints = pm.ls(sl=True)
+    torename = list()
+
+    for jnt in joints:
+        print(jnt)
+        mirrorJoints = pm.mirrorJoint(jnt, mirrorBehavior=True, myz=True)
+        torename.append(mirrorJoints)
+    pm.select(torename)
+    XMRenameEntry()
+    XMSearchReplace("_bjnt1","_bjnt")
+    XMSearchReplace("_jnt1", "_jnt")
+
+
+
+
+def XMSearchReplace(s=None,r=None):
     selected = pm.ls(sl=True)
-    for sel in selected:
+    if s == None:
         search = XMRenameWindow.searchField.getText()
         replace = XMRenameWindow.replaceField.getText()
+    else:
+        search = s
+        replace = r
+    for sel in selected:
         objName = sel.name()
         sel.rename(str(objName).replace(search,replace))
 
-def XMPrefixSuffix(type=None):
+def XMPrefixSuffix(type=None, tx=None):
     selected = pm.ls(sl=True)
     prefix = XMRenameWindow.prefixField.getText()
     suffix = XMRenameWindow.suffixField.getText()
+    if tx != None:
+        prefix = tx
+        suffix = tx
 
     for sel in selected:
         objName = sel.name()
@@ -120,6 +144,8 @@ class XMRenameWindows(object):
 
         pm.setParent(self.Entryframe)
         self.renameButton = pm.button(l="Entry Rename", c="XMRenameEntry()", en=False)
+        pm.popupMenu(b=3)
+        pm.menuItem(l="joint mirror entry", c="XMJointMirror()")
 
         # search and replace rename
         pm.setParent(self.menu)
@@ -131,6 +157,8 @@ class XMRenameWindows(object):
         self.replaceField = pm.textField()
         pm.setParent(self.searchFrame)
         pm.button(l="Search Replace rename", c="XMSearchReplace()")
+        pm.popupMenu(b=3)
+        pm.menuItem(l="remove _bjnt", c="XMSearchReplace('_bjnt','')")
 
         # prefix suffix rename
         pm.setParent(self.menu)
@@ -140,11 +168,20 @@ class XMRenameWindows(object):
         self.prefixField = pm.textField()
         pm.setParent(self.prefixlayout)
         pm.button(l="add prefix", c="XMPrefixSuffix(type='prefix')")
+        pm.popupMenu(b=3)
+        pm.menuItem(l="L_", c="XMPrefixSuffix(type='prefix',tx='L_')")
+        pm.menuItem(l="R_", c="XMPrefixSuffix(type='prefix',tx='R_')")
+        
         pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
         pm.text(l="suffix:")
         self.suffixField = pm.textField()
         pm.setParent(self.prefixlayout)
         pm.button(l="add suffix", c="XMPrefixSuffix(type='suffix')")
+        pm.popupMenu(b=3)
+        pm.menuItem(l="_bjnt", c="XMPrefixSuffix(type='suffir',tx='_bjnt')")
+        pm.menuItem(l="_jnt", c="XMPrefixSuffix(type='suffir',tx='_jnt')")
+        pm.menuItem(l="_ctrl", c="XMPrefixSuffix(type='suffir',tx='_ctrl')")
+        pm.menuItem(l="_srtBuffer", c="XMPrefixSuffix(type='suffir',tx='_srtBuffer')")
 
         #enumaration rename
         pm.setParent(self.menu)
