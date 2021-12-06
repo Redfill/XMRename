@@ -159,6 +159,9 @@ class XMRenameWindows(object):
         pm.button(l="Search Replace rename", c="XMSearchReplace()")
         pm.popupMenu(b=3)
         pm.menuItem(l="remove _bjnt", c="XMSearchReplace('_bjnt','')")
+        pm.menuItem(l="bjnt to FkJnt", c="XMSearchReplace('_bjnt','_FkJnt')")
+        pm.menuItem(l="bjnt to IkJnt", c="XMSearchReplace('_bjnt','_IkJnt')")
+
 
         # prefix suffix rename
         pm.setParent(self.menu)
