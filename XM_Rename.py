@@ -115,6 +115,12 @@ def XMenumerate():
         start += 1
     start = XMRenameWindow.enumStart.getValue()
 
+def XMEndJnt():
+    selected = pm.ls(sl=True)
+    jnt = selected[0]
+    endjnt = selected[1]
+
+    endjnt.rename(str(jnt.name().replace("_bjnt","").replace("_jnt","")+"End_jnt"))
 
 class XMRenameWindows(object):
     def __init__(self):
@@ -185,6 +191,7 @@ class XMRenameWindows(object):
         pm.menuItem(l="_jnt", c="XMPrefixSuffix(type='suffir',tx='_jnt')")
         pm.menuItem(l="_ctrl", c="XMPrefixSuffix(type='suffir',tx='_ctrl')")
         pm.menuItem(l="_srtBuffer", c="XMPrefixSuffix(type='suffir',tx='_srtBuffer')")
+        pm.menuItem(l="EndJnt", c="XMEndJnt()")
 
         #enumaration rename
         pm.setParent(self.menu)
