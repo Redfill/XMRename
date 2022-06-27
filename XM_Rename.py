@@ -24,7 +24,7 @@ def XMRenameEntry():
         for ent in RenameEntry.entry:
             L = RenameEntry.entry[ent].L.getText()
             R = RenameEntry.entry[ent].R.getText()
-            objName = sel.name()
+            objName = sel.nodeName()
             sel.rename(str(objName).replace(L,R))
             if objName == sel.name():
                 sel.rename(str(objName).replace(R, L))
@@ -86,41 +86,93 @@ def XMSearchReplace(s=None,r=None):
         search = s
         replace = r
     for sel in selected:
-        objName = sel.name()
+        objName = sel.nodeName()
         sel.rename(str(objName).replace(search,replace))
 
 def XMPrefixSuffix(type=None, tx=None):
     selected = pm.ls(sl=True)
-    prefix = XMRenameWindow.prefixField.getText()
-    suffix = XMRenameWindow.suffixField.getText()
     if tx != None:
         prefix = tx
         suffix = tx
-
+    else:
+        prefix = XMRenameWindow.prefixField.getText()
+        suffix = XMRenameWindow.suffixField.getText()
     for sel in selected:
-        objName = sel.name()
+        objName = sel.nodeName()
         if type == "prefix":
             sel.rename(prefix+objName)
+            print(prefix)
+            print(objName)
         else:
             sel.rename(objName+suffix)
 
-def XMenumerate():
+def XMenumerate(name=None,start=None, padding=None):
     selected = pm.ls(sl=True)
-    name = XMRenameWindow.enumField.getText()
-    start = XMRenameWindow.enumStart.getValue()
-    padding = XMRenameWindow.enumPadding.getValue() +1
+    if name == None:
+        name = XMRenameWindow.enumField.getText()
+        start = XMRenameWindow.enumStart.getValue()
+        padding = XMRenameWindow.enumPadding.getValue() +1
+    else:
+        name = name
+        start = start
+        padding = padding
     #todo fix double renaming adding to number
     for sel in selected:
         sel.rename(name+str(f'{start:{0}{padding}}') )
         start += 1
-    start = XMRenameWindow.enumStart.getValue()
+
+    #start = XMRenameWindow.enumStart.getValue()
 
 def XMEndJnt():
     selected = pm.ls(sl=True)
     jnt = selected[0]
     endjnt = selected[1]
 
-    endjnt.rename(str(jnt.name().replace("_bjnt","").replace("_jnt","")+"End_jnt"))
+    endjnt.rename(str(jnt.nodeName().replace("_bjnt","").replace("_jnt","")+"End_jnt"))
+
+
+def PopRenameInterpreter():
+    win = XMPopRenameWindow
+    txt = win.field.getText()
+    commands = txt.split(",")
+    print(commands)
+
+    if commands[0] == "!":
+        win.closewindow()
+        return
+
+    for c in commands:
+        print("pass")
+        if c[0] == "<":
+            XMPrefixSuffix("suffix", c[1:])
+            continue
+        print("pass1")
+        if c[0] == ">":
+            XMPrefixSuffix("prefix", c[1:])
+            continue
+        print("pass2")
+        if ":" in c:
+            sr = c.split(":")
+            XMSearchReplace(sr[0],sr[1])
+            continue
+
+        if "[" in c:
+            e = c.split("[")
+            print(e[1][:1])
+            XMenumerate(e[0],1,str(e[1][:1]))
+            continue
+
+
+        print("pass3")
+        sl= pm.ls(sl=True)
+        for s in sl:
+            pm.rename(s,c)
+
+    pm.setFocus(win.field)
+
+
+
+
 
 class XMRenameWindows(object):
     def __init__(self):
@@ -174,7 +226,7 @@ class XMRenameWindows(object):
         self.prefixlayout = pm.frameLayout(l="prefix suffix", mh=10, bgc=(0.2,0.2,0.5), cll=True)
         pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
         pm.text(l="prefix:")
-        self.prefixField = pm.textField()
+        self.prefixField = pm.textField(ec="XMPrefixSuffix(type='prefix')")
         pm.setParent(self.prefixlayout)
         pm.button(l="add prefix", c="XMPrefixSuffix(type='prefix')")
         pm.popupMenu(b=3)
@@ -183,7 +235,7 @@ class XMRenameWindows(object):
         
         pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
         pm.text(l="suffix:")
-        self.suffixField = pm.textField()
+        self.suffixField = pm.textField(ec="XMPrefixSuffix(type='suffix')")
         pm.setParent(self.prefixlayout)
         pm.button(l="add suffix", c="XMPrefixSuffix(type='suffix')")
         pm.popupMenu(b=3)
@@ -198,7 +250,7 @@ class XMRenameWindows(object):
         self.enumLayout = pm.frameLayout(l="enumeration", mh=10, bgc=(0.2,0.5,0.5), cll=True)
         pm.rowColumnLayout(nc=2, cw=[(1,60),(2,150)])
         pm.text(l="rename")
-        self.enumField = pm.textField()
+        self.enumField = pm.textField(ec="XMenumerate()")
         pm.setParent(self.enumLayout)
         pm.rowColumnLayout(nc=2)
         pm.text(l="start#")
@@ -218,5 +270,28 @@ class XMRenameWindows(object):
         # display new window
         pm.showWindow()
 
+class XMPopRenameWindows(object):
+    def __init__(self):
+
+        self.window = "XMPopRename"
+        self.title = "XM Pop Rename"
+        self.size = (300,50)
+
+        # close old window is open
+        if pm.window(self.window, exists=True):
+            pm.deleteUI(self.window, window=True)
+
+        # create new window
+        self.window = pm.window(self.window, title=self.title, widthHeight=self.size,rtf=True, tb=False)
+        pm.frameLayout(lv=False)
+        self.field = pm.textField(w=300,h=50, ec="PopRenameInterpreter()", aie=True)
+        # display new window
+        pm.showWindow()
+
+    def closewindow(self):
+        pm.deleteUI(self.window, window=True)
+
 XMRenameWindow = XMRenameWindows()
 XMLoadEntry()
+
+#XMPopRenameWindow = XMPopRenameWindows()
